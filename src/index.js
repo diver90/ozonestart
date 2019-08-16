@@ -109,7 +109,7 @@ function actionPage() {
             const cardPrice = card.querySelector('.card-price'),
                 price = parseFloat(cardPrice.textContent);
 
-                if  (( min.value && price < min.value ) || (min.value && price > max.value)){
+                if  (( min.value && price < min.value ) || (max.value && price > max.value)){
                     card.parentNode.style.display = 'none';                           
             } else {
                 card.parentNode.style.display = '';              

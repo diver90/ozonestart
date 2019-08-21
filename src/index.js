@@ -93,25 +93,8 @@ function actionPage() {
         min = document.getElementById('min'),
         max = document.getElementById('max'),
         search = document.querySelector('.search-wrapper_input'),
-        //searchBtn = document.querySelector('.search-btn'),
         searchStr = document.querySelector('.search-wrapper_input');
 
-
-    function filter() {
-        cards.forEach((card) => {
-            const cardPrice = card.querySelector('.card-price'),
-                price = parseFloat(cardPrice.textContent),
-                discount = card.querySelector('.card-sale');
-            if ((min.value && price < min.value) || (max.value && price > max.value)) {
-                card.parentNode.style.display = 'none';
-            } else if (discountCheckbox.checked && !discount) {
-                card.parentNode.style.display = 'none';
-            } else {
-                card.parentNode.style.display = '';
-            }
-
-        });
-    }
     discountCheckbox.addEventListener('click', filter);
     min.addEventListener('change', filter);
     max.addEventListener('change', filter);
@@ -130,7 +113,38 @@ function actionPage() {
     });
 }
 
-//end фильтр, поиск
+
+//end поиск
+
+//фильтр
+function filter() {
+    const cards = document.querySelectorAll('.goods .card'),
+        discountCheckbox = document.getElementById('discount-checkbox'),
+        min = document.getElementById('min'),
+        max = document.getElementById('max'),
+        activeLi = document.querySelector('.catalog-list li.active');
+
+    cards.forEach((card) => {
+        const cardPrice = card.querySelector('.card-price'),
+            price = parseFloat(cardPrice.textContent),
+            discount = card.querySelector('.card-sale');
+
+        card.parentNode.style.display = '';
+
+        if ((min.value && price < min.value) || (max.value && price > max.value)) {
+            card.parentNode.style.display = 'none';
+        } else if (discountCheckbox.checked && !discount) {
+            card.parentNode.style.display = 'none';
+        } else if (activeLi) {
+            if (card.dataset.category !== activeLi.textContent) {
+                card.parentNode.style.display = 'none';
+            } 
+        }
+
+    });
+
+}
+//end фильтр
 
 //получение данных с сервера
 
@@ -179,8 +193,10 @@ function renderCatalog() {
     const cards = document.querySelectorAll('.goods .card'),
         catalog = new Set(),
         catalogList = document.querySelector('.catalog-list');
-        const catalogWraper = document.querySelector('.catalog');
-        const btnCatalog = document.querySelector('.catalog-button');
+    const catalogWraper = document.querySelector('.catalog');
+    const btnCatalog = document.querySelector('.catalog-button');
+    const filterTitle = document.querySelector('.filter-title h5');
+    
     cards.forEach((card) => {
         catalog.add(card.dataset.category);
     });
@@ -189,20 +205,27 @@ function renderCatalog() {
         catalogLi.innerText = category;
         catalogList.appendChild(catalogLi);
     });
+
+    const allLi = catalogList.querySelectorAll('li');
+
     btnCatalog.addEventListener('click', (event) => {
-        if(catalogWraper.style.display) {
+
+        if (catalogWraper.style.display) {
             catalogWraper.style.display = '';
         } else {
-        catalogWraper.style.display = 'block';
+            catalogWraper.style.display = 'block';
         }
-        if(event.target.tagName === 'LI'){
-            cards.forEach((card) => {
-                if(card.dataset.category === event.target.textContent){
-                    card.parentNode.style.display = '';
+
+        if (event.target.tagName === 'LI') {
+                allLi.forEach((elem) => {
+                if (elem === event.target) {
+                    elem.classList.add('active');
                 } else {
-                    card.parentNode.style.display = 'none';
+                    elem.classList.remove('active');
                 }
             });
+            filterTitle.textContent = event.target.textContent;
+            filter();
         }
     });
 
@@ -210,9 +233,9 @@ function renderCatalog() {
 
 getData().then((data) => {
     renderCards(data);
+    renderCatalog();
     toogleCheckbox();
     toogleCart();
     addCart();
     actionPage();
-    renderCatalog();
 });
